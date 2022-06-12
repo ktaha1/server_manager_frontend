@@ -10,8 +10,8 @@ import { Server } from '../interface/server';
   providedIn: 'root',
 })
 export class ServerService {
-  private readonly apiUrl = 'any';
-  constructor(private http: HttpClient) { }
+  private readonly apiUrl = 'http://localhost:8081';
+  constructor(private http: HttpClient) {}
 
   servers$ = <Observable<CustomResponse>>(
     this.http
@@ -34,28 +34,28 @@ export class ServerService {
     );
 
   filter$ = (status: Status, response: CustomResponse) =>
-    <Observable<CustomResponse>>(
-      new Observable<CustomResponse>(
-        suscriber => {
-          console.log(response);
-          suscriber.next(
-            status === Status.ALL ? { ...response, message: `Servers filtred by ${status} status` } :
-              {
-                ...response,
-                message: response.data.servers
-                  .filter(server => server.status === status).length > 0 ?
-                  `Servers filtred by ${status} status` : `No servers of ${status} found`,
-                data: {
-                  servers: response.data.servers
-                    .filter(server => server.status === status)
-                }
-              }
-          );
-          suscriber.complete();
-        }
-      )
-        .pipe(tap(console.log), catchError(this.handleError))
-    );
+    <Observable<CustomResponse>>new Observable<CustomResponse>((suscriber) => {
+      console.log(response);
+      suscriber.next(
+        status === Status.ALL
+          ? { ...response, message: `Servers filtred by ${status} status` }
+          : {
+              ...response,
+              message:
+                response.data.servers.filter(
+                  (server) => server.status === status
+                ).length > 0
+                  ? `Servers filtred by ${status} status`
+                  : `No servers of ${status} found`,
+              data: {
+                servers: response.data.servers.filter(
+                  (server) => server.status === status
+                ),
+              },
+            }
+      );
+      suscriber.complete();
+    }).pipe(tap(console.log), catchError(this.handleError));
 
   delete$ = (serverID: string) =>
     <Observable<CustomResponse>>(
